@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-4xl mx-auto p-6 bg-white dark:bg-neutral-900 rounded-2xl shadow-md">
+    <h1 class="text-2xl font-bold text-neutral-800 dark:text-white mb-4">👤 Профиль: {{ user.username }}</h1>
+
+    {% if articles %}
+        <h2 class="text-xl font-semibold text-neutral-700 dark:text-neutral-300 mb-2">📝 Ваши статьи:</h2>
+        <ul class="space-y-3">
+            {% for article in articles %}
+                <li class="p-4 bg-neutral-100 dark:bg-neutral-800 rounded-xl">
+                    <a href="/article/{{ article.id }}" class="text-lg font-medium text-blue-600 dark:text-blue-400 hover:underline">
+                        {{ article.title }}
+                    </a>
+                    <div class="text-sm text-neutral-600 dark:text-neutral-400">ID: {{ article.id }}</div>
+                    <a href="/edit/{{ article.id }}" class="text-sm text-green-600 dark:text-green-400 hover:underline">✏️ Редактировать</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="text-neutral-700 dark:text-neutral-300">У вас пока нет статей.</p>
+    {% endif %}
+</div>
+{% endblock %}
