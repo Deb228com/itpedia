@@ -6,6 +6,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 from app.routers import auth, articles, users, search, guide, about
 from app.database import create_database
+from routes import article  
+
+app.include_router(article.router)
+
 
 app = FastAPI(
     title="ITPedia",
