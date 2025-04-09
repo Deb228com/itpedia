@@ -1,66 +1,35 @@
-# Это маршрут отображения отдельной статьи
-from fastapi import APIRouter, Request, Depends, HTTPException
-from fastapi.responses import HTMLResponse
-from sqlalchemy.orm import Session
-from starlette.status import HTTP_404_NOT_FOUND
-
-from db import get_db
-from models import Article
-from auth import get_current_user
-from fastapi.templating import Jinja2Templates
+from fastapi import APIRouter, Form, Request, Depends, HTTPException
+from fastapi.responses import RedirectResponse
+from app.db import articles_db, users_db
+from app.utils.auth import get_current_user
+from starlette.status import HTTP_303_SEE_OTHER
+from uuid import uuid4
 
 router = APIRouter()
-templates = Jinja2Templates(directory="templates")
 
-@router.get("/article/{article_id}", response_class=HTMLResponse)
-def read_article(request: Request, article_id: int, db: Session = Depends(get_db), user=Depends(get_current_user)):
-    article = db.query(Article).filter(Article.id == article_id).first()
-    if not article:
-        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Статья не найдена")
+@router.get("/create")
+def create_article_page():
+    return {"page": "create"}
 
-    return templates.TemplateResponse("article.html", {
-        "request": request,
-        "article": article,
-        "user": user
-    })
 @router.post("/create")
+def create_article(title: str = Form(...), content: str = Form(...), draft: bool = Form(False), request: Request = None, user: str = Depends(get_current_user)):
+    article_id = str(uuid4())
+    articles_db[article_id] = {
+        "id": article_id,
+        "title": title,
+        "content": content,
+        "author": user,
+        "is_draft": draft
+    }
+    users_db[user]["articles"].append(article_id)
+    return RedirectResponse(url=f"/article/{article_id}", status_code=HTTP_303_SEE_OTHER)
 
-async def create_post(request: Request, db: Session = Depends(get_db), user=Depends(get_current_user)):
-    form = await request.form()
-    title = form.get("title")
-    content = form.get("content")
-    category = form.get("category")
-    tags = form.get("tags")
+@router.get("/article/{article_id}")
+def get_article(article_id: str, user: str = Depends(get_current_user)):
+    article = articles_db.get(article_id)
+    if not article or (article["is_draft"] and article["author"] != user):
+        raise HTTPException(status_code=404, detail="Статья не найдена")
+    return article
 
-    article = Article(
-        title=title,
-        content=content,
-        author=user.username,
-        category=category,
-        tags=tags
-    )
-    db.add(article)
-    db.commit()
-    db.refresh(article)
-
-    return RedirectResponse(url=f"/article/{article.id}", status_code=302)
-@router.get("/article/{id}", response_class=HTMLResponse)
-def read_article(id: int, request: Request, db: Session = Depends(get_db)):
-    article = db.query(Article).filter(Article.id == id).first()
-    if not article:
-        return RedirectResponse(url="/", status_code=302)
-
-    # Находим похожие статьи по категории или тегам
-    similar_articles = db.query(Article).filter(
-        Article.id != id,
-        (
-            (Article.category == article.category) |
-            (Article.tags != None and article.tags != None and Article.tags.op('LIKE')(f"%{article.tags.split(',')[0].strip()}%"))
-        )
-    ).limit(5).all()
-
-    return templates.TemplateResponse("article.html", {
-        "request": request,
-        "article": article,
         "similar_articles": similar_articles
     })
