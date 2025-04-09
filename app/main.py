@@ -39,3 +39,5 @@ app.include_router(articles.router)
 @app.get("/")
 def root():
     return {"message": "Добро пожаловать на ITPedia"}
+    
+app.include_router(site_router)
