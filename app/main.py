@@ -1,26 +1,19 @@
-# app/main.py
+# Это основной файл запуска приложения
 
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
-from app.routes import articles, users, auth, general
-from app import models
-from app.database import engine
+from starlette.middleware.sessions import SessionMiddleware
+from app.routers import auth, articles, users, search, guide, about
+from app.database import create_database
 
-# Создание всех таблиц в базе данных
-models.Base.metadata.create_all(bind=engine)
+app = FastAPI(
+    title="ITPedia",
+    description="ITPedia — онлайн-энциклопедия о технологиях",
+    version="1.0.0"
+)
 
-# Инициализация FastAPI приложения
-app = FastAPI(title="ITPedia")
-
-# Подключение статических файлов (CSS, JS)
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
-# Шаблонизатор Jinja2
-templates = Jinja2Templates(directory="app/templates")
-
-# Настройка CORS (если понадобится фронт на другом домене)
+# CORS (разрешить доступ с любых источников)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -29,15 +22,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Подключение маршрутов
-app.include_router(general.router)
-app.include_router(auth.router)
-app.include_router(users.router)
-app.include_router(articles.router)
+# Сессии для входа пользователя
+app.add_middleware(SessionMiddleware, secret_key="supersecretkey")
 
-# Главная точка входа
-@app.get("/")
-def root():
-    return {"message": "Добро пожаловать на ITPedia"}
-    
-app.include_router(site_router)
+# Подключаем маршруты
+app.include_router(auth.router)
+app.include_router(articles.router)
+app.include_router(users.router)
+app.include_router(search.router)
+app.include_router(guide.router)
+app.include_router(about.router)
+
+# Статические файлы (CSS, JS)
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# Создание базы данных при первом запуске
+create_database()
