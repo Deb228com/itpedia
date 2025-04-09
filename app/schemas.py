@@ -1,43 +1,37 @@
 # app/schemas.py
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr
 from typing import Optional, List
 from datetime import datetime
 
 # ----------------------------
-# Пользователь
+# Схемы пользователя
 # ----------------------------
 
-class UserCreate(BaseModel):
-    username: str = Field(..., min_length=3, max_length=32)
-    email: EmailStr
-    password: str = Field(..., min_length=6)
-
-class UserOut(BaseModel):
-    id: int
+class UserBase(BaseModel):
     username: str
+    email: EmailStr
+
+class UserCreate(UserBase):
+    password: str
+
+class UserResponse(UserBase):
+    id: int
 
     class Config:
         orm_mode = True
 
 
 # ----------------------------
-# Токен авторизации
-# ----------------------------
-
-class Token(BaseModel):
-    access_token: str
-    token_type: str = "bearer"
-
-
-# ----------------------------
-# Статья
+# Схемы статьи
 # ----------------------------
 
 class ArticleBase(BaseModel):
-    title: str = Field(..., min_length=3, max_length=100)
+    title: str
     content: str
-    is_draft: Optional[bool] = False
+    is_draft: bool = False
+    category: Optional[str] = None
+    tags: Optional[List[str]] = []
 
 class ArticleCreate(ArticleBase):
     pass
@@ -45,22 +39,11 @@ class ArticleCreate(ArticleBase):
 class ArticleUpdate(ArticleBase):
     pass
 
-class ArticleOut(BaseModel):
+class ArticleResponse(ArticleBase):
     id: int
-    title: str
-    content: str
-    is_draft: bool
+    author_id: int
     created_at: datetime
     updated_at: datetime
-    author: UserOut
 
     class Config:
         orm_mode = True
-
-
-# ----------------------------
-# Поиск и теги (опционально)
-# ----------------------------
-
-class SearchQuery(BaseModel):
-    query: str
