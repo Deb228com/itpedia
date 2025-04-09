@@ -1,3 +1,34 @@
+{% set page_title = article.title ~ " | ITPedia" %}
+{% set page_description = article.content[:150]|striptags ~ "..." %}
+{% set page_url = "https://itpedia.onrender.com/article/" ~ article.id %}
+{% set og_image = "https://itpedia.onrender.com/static/opengraph_default.jpg" %}
+{% set keywords = (article.tags or "") ~ ", " ~ (article.category or "") %}
+
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <title>{{ page_title }}</title>
+
+    <!-- SEO -->
+    <meta name="description" content="{{ page_description }}">
+    <meta name="keywords" content="{{ keywords }}">
+    <meta name="author" content="{{ article.author.username if article.author else 'ITPedia' }}">
+
+    <!-- OpenGraph -->
+    <meta property="og:title" content="{{ page_title }}">
+    <meta property="og:description" content="{{ page_description }}">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="{{ page_url }}">
+    <meta property="og:image" content="{{ og_image }}">
+    <meta property="og:site_name" content="ITPedia">
+
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ page_title }}">
+    <meta name="twitter:description" content="{{ page_description }}">
+    <meta name="twitter:image" content="{{ og_image }}">
+
 {% extends "base.html" %}
 {% block content %}
 <div class="max-w-3xl mx-auto p-6 bg-white dark:bg-neutral-900 shadow-md rounded-2xl">
@@ -34,3 +65,17 @@
     </div>
   {% endif %}
 </div>
+{% if similar_articles %}
+  <div class="mt-10 border-t pt-6">
+    <h3 class="text-lg font-semibold mb-2 text-neutral-800 dark:text-neutral-200">🔗 Похожие статьи</h3>
+    <ul class="space-y-1 list-disc list-inside text-neutral-700 dark:text-neutral-300">
+      {% for art in similar_articles %}
+        <li>
+          <a href="/article/{{ art.id }}" class="hover:underline text-blue-600 dark:text-blue-400">
+            {{ art.title }}
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endif %}
