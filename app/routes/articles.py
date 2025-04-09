@@ -30,6 +30,6 @@ def get_article(article_id: str, user: str = Depends(get_current_user)):
     if not article or (article["is_draft"] and article["author"] != user):
         raise HTTPException(status_code=404, detail="Статья не найдена")
      return {
-        "article": article,
+         "article": article,
         "similar_articles": similar_articles  
     }
