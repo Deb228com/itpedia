@@ -9,6 +9,8 @@ from app.database import create_database
 from routes import article
 from routes import edit
 from routes import profile
+from app.routers import auth, articles, users, search, guide, about
+
 
 app.include_router(profile.router)
 
