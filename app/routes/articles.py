@@ -44,3 +44,23 @@ async def create_post(request: Request, db: Session = Depends(get_db), user=Depe
     db.refresh(article)
 
     return RedirectResponse(url=f"/article/{article.id}", status_code=302)
+@router.get("/article/{id}", response_class=HTMLResponse)
+def read_article(id: int, request: Request, db: Session = Depends(get_db)):
+    article = db.query(Article).filter(Article.id == id).first()
+    if not article:
+        return RedirectResponse(url="/", status_code=302)
+
+    # Находим похожие статьи по категории или тегам
+    similar_articles = db.query(Article).filter(
+        Article.id != id,
+        (
+            (Article.category == article.category) |
+            (Article.tags != None and article.tags != None and Article.tags.op('LIKE')(f"%{article.tags.split(',')[0].strip()}%"))
+        )
+    ).limit(5).all()
+
+    return templates.TemplateResponse("article.html", {
+        "request": request,
+        "article": article,
+        "similar_articles": similar_articles
+    })
