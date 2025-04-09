@@ -1,1 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-3xl mx-auto p-6 bg-white dark:bg-neutral-900 rounded-2xl shadow-md">
+    <h1 class="text-2xl font-bold mb-4 text-neutral-800 dark:text-white">Редактировать статью</h1>
+
+    <form method="post" class="space-y-4">
+        <div>
+            <label class="block text-neutral-800 dark:text-neutral-200 mb-1">Заголовок</label>
+            <input type="text" name="title" value="{{ article.title }}"
+                class="w-full p-2 rounded border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white">
+        </div>
+
+        <div>
+            <label class="block text-neutral-800 dark:text-neutral-200 mb-1">Содержание</label>
+            <textarea name="content" rows="12"
+                class="w-full p-2 rounded border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white">{{ article.content }}</textarea>
+        </div>
+
+        <div class="flex gap-4">
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                💾 Сохранить изменения
+            </button>
+            <form method="post" action="/delete/{{ article.id }}">
+                <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+                    🗑 Удалить статью
+                </button>
+            </form>
+        </div>
+    </form>
+</div>
+{% endblock %}
 
