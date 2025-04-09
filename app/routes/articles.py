@@ -23,3 +23,24 @@ def read_article(request: Request, article_id: int, db: Session = Depends(get_db
         "article": article,
         "user": user
     })
+@router.post("/create")
+
+async def create_post(request: Request, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    form = await request.form()
+    title = form.get("title")
+    content = form.get("content")
+    category = form.get("category")
+    tags = form.get("tags")
+
+    article = Article(
+        title=title,
+        content=content,
+        author=user.username,
+        category=category,
+        tags=tags
+    )
+    db.add(article)
+    db.commit()
+    db.refresh(article)
+
+    return RedirectResponse(url=f"/article/{article.id}", status_code=302)
