@@ -36,3 +36,13 @@ class Article(Base):
 
     author_id = Column(Integer, ForeignKey("users.id"))
     author = relationship("User", back_populates="articles")
+
+class Article(Base):
+    __tablename__ = "articles"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, index=True)
+    content = Column(Text)
+    author = Column(String)
+    category = Column(String, nullable=True)  # Новое поле: категория
+    tags = Column(String, nullable=True)      # Новое поле: теги (через запятую)
