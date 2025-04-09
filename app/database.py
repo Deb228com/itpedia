@@ -1,27 +1,20 @@
 # app/database.py
 
 from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, declarative_base
+import os
 
-# Подключение к SQLite (можно заменить на PostgreSQL, если нужно)
-SQLALCHEMY_DATABASE_URL = "sqlite:///./itpedia.db"
+# Адрес подключения к SQLite (можно сменить на PostgreSQL при необходимости)
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./itpedia.db")
 
-# Создаём движок базы данных
+# Создаём движок SQLAlchemy
 engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+    DATABASE_URL,
+    connect_args={"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
 )
 
-# Создаём сессии для взаимодействия с БД
+# Создаём сессию подключения к БД
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# Базовый класс для моделей
+# Базовый класс для всех моделей (мы его используем в models.py как Base)
 Base = declarative_base()
-
-# Функция для получения сессии (используется в зависимостях)
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
